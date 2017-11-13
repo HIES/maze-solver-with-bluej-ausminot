@@ -7,7 +7,7 @@ public class Maze
         StdDraw.setXscale(0, cols);
         StdDraw.setYscale(0, rows);
         board = new Cell[rows][cols];
-        //grab number of rows to invert grid system with StdDraw (lower-left, instead of top-left)
+        
         int height = board.length - 1;
         for (int r = 0; r < rows; r++)
             for (int c = 0; c < cols; c++) {
@@ -15,10 +15,6 @@ public class Maze
             }
     }
 
-    /*
-    *   This method draws the current state of the maze to the canvas.
-    *   Leave the method alone.
-    */
     public void draw()
     {
         for (int r = 0; r < board.length; r++)
@@ -32,22 +28,15 @@ public class Maze
 
     private boolean isValid(int row, int col)
     {
-        if (row < 0 && col < 0)
+        boolean valid = false;
+        if (row >= 0 && row < board.length && col >= 0 && col < board[row].length)
         {
-            return false;
+            if (!board[row][col].isWall() && !board[row][col].isVisited())
+            {
+                valid = true;
+            }
         }
-        else if (board.length >= row && board.length >= col)
-        {
-            return false;
-        }
-        else if (board[row][col].isWall() || board[row][col].isVisited())
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        return valid;
     }
 
     private boolean isExit(int row, int col)
@@ -61,23 +50,62 @@ public class Maze
             return false;
         }
     }
-    
+
     public boolean findPath(int row, int col)
     {
-        return false;
+        boolean isComp = false;
+        
+        if (isValid(row, col))
+        {
+            board[row][col].visitCell();
+            this.draw();
+            StdDraw.pause(DELAY);
+            
+            if (isExit(row, col))
+            {
+                isComp = true;
+            }
+            else
+            {
+                if (!isComp)
+                {
+                    isComp = findPath(row, col+1);
+                }
+                if (!isComp)
+                {
+                    isComp = findPath(row-1, col);
+                }
+                if (!isComp)
+                {
+                    isComp = findPath(row+1, col);
+                }
+                if (!isComp)
+                {
+                    isComp = findPath(row, col-1);
+                }
+            }
+        }
+        if (isComp)
+        {
+            board[row][col].becomePath();
+            this.draw();
+            StdDraw.pause(DELAY);
+        }
+        
+        return isComp;
     }
 
     public static void main(String[] args) {
         StdDraw.enableDoubleBuffering();
-        int[][] maze = {{1,1,0,0,0,0,0,0,0,0},
+        int[][] maze = {{1,1,0,0,0,0,0,1,0,0},
                         {0,1,1,1,1,0,1,1,1,0},
                         {0,1,1,1,1,0,1,1,0,0},
                         {0,1,0,1,1,1,1,1,1,0},
                         {0,0,0,0,0,1,0,1,1,0},
                         {0,1,1,1,1,1,0,1,1,0},
-                        {0,1,1,0,0,1,0,0,1,0},
-                        {0,1,1,0,1,1,0,1,1,0},
-                        {0,1,1,0,1,1,0,1,1,0},
+                        {0,1,1,0,0,1,0,0,0,0},
+                        {0,0,1,0,1,1,0,0,1,0},
+                        {0,0,0,0,1,1,0,0,1,0},
                         {0,0,0,0,0,0,0,0,1,1}};
         Maze geerid = new Maze(maze.length, maze[0].length, maze);
         geerid.draw();
